@@ -1,0 +1,128 @@
+<html>
+
+<script>
+const monthNames = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+function antesomnum_time(SleptYet){
+	var now = new Date();
+	if (now.getHours() < 12) {
+		if(SleptYet){
+			// traditional time is in AM
+			// don't change anything about the time
+			var AS_Millisecond = now.getMilliseconds();
+			var AS_Second = now.getSeconds();
+			var AS_Minute = now.getMinutes();
+			var AS_Hour = now.getHours();
+			var AS_Date = now.getDate();
+			var AS_Month = now.getMonth();
+			var AS_Year = now.getFullYear();
+			var AS_Suffix = "AM";
+		} else {
+			// traditional time is in AM
+			// base new time on yesterday midday (before attempting to optimise, be aware of skipped or repeated hours from summer time adjustments)
+			var yesterday_midday = new Date(now.getFullYear(), now.getMonth(), now.getDate()-1, 12, 0, 0, 0);
+			var elapsed_time_since_yesterday_midday = now.getTime() - yesterday_midday.getTime();
+			var AS_Millisecond = elapsed_time_since_yesterday_midday % 1000;
+			var AS_Second = Math.floor(elapsed_time_since_yesterday_midday /1000)%60;
+			var AS_Minute = Math.floor(elapsed_time_since_yesterday_midday /1000/60)%60;
+			var AS_Hour = Math.floor(elapsed_time_since_yesterday_midday /1000/60/60)%24+12;
+			var AS_Date = yesterday_midday.getDate();
+			var AS_Month = yesterday_midday.getMonth();
+			var AS_Year = yesterday_midday.getFullYear();
+			var AS_Suffix = "AS";
+		}
+	} else {
+		// traditional time is in PM
+		// don't change anything about the time
+		var AS_Millisecond = now.getMilliseconds();
+		var AS_Second = now.getSeconds();
+		var AS_Minute = now.getMinutes();
+		var AS_Hour = now.getHours();
+		var AS_Date = now.getDate();
+		var AS_Month = now.getMonth();
+		var AS_Year = now.getFullYear();
+		var AS_Suffix = "PM";
+	}
+	return {Year:AS_Year, Month:AS_Month, Date:AS_Date, Hour:AS_Hour, Minute:AS_Minute, Second:AS_Second, Millisecond:AS_Millisecond, Suffix:AS_Suffix};
+}
+function prettyTime(TimeComponents){
+	return (
+		"<span id=Date>" + 
+			TimeComponents.Year + " " + 
+			prettyMonth(TimeComponents.Month)+", " + 
+			prettyDateOrdinal(TimeComponents.Date) + 
+		"</span><span id=Time>" + 
+			((TimeComponents.Hour-1)%12+1) +":" + 
+			("00" + TimeComponents.Minute).slice(-2) + ":" + 
+			("00" + TimeComponents.Second).slice(-2) + " " + 
+			TimeComponents.Suffix + 
+		"</span>");
+}
+function prettyMonth(monthID){
+	return "M"+("00" + (monthID+1)).slice(-2) + " ("+monthNames[monthID]+")"
+}
+
+function prettyDateOrdinal(DateID){
+	if (DateID%10 === 1){
+		return DateID+"st";
+	} else if(DateID%10 === 2) {
+		return DateID+"nd";
+	} else if(DateID%10 === 3) {
+		return DateID+"rd";
+	} else {
+		return DateID+"th";
+	}
+}
+
+function updateTime(){
+	document.getElementById("AS_Time").innerHTML = prettyTime(antesomnum_time(document.getElementById("SleptYet").checked));
+}
+
+
+window.setInterval(function(){
+  updateTime();
+}, 1000);
+</script>
+<style>
+html {
+	font-size: min(3.6vw,5.9vh);
+	color:#454545;
+	font-family:sans-serif;
+}
+body{
+	background-color:#fafafa;
+}
+h1{
+	text-align:center;
+}
+#AS_Time {
+	text-align:center;
+	margin-top:1rem;
+}
+#Date{
+	display:block;
+	font-size:2rem;
+}
+#Time{
+	display:block;
+	font-size:4rem;
+}
+
+#Control {
+	text-align:center;
+}
+input[type=checkbox] {
+    width:0.6rem;
+	height:0.6rem;
+}
+</style>
+<body>
+<h1>Welcome to Ante&nbsp;Somnum - Your post&#8209;midnight clock!</h1>
+<div id="Control">
+<input type="checkbox" id="SleptYet" name="SleptYet" value="true" onChange="javascript:updateTime()">
+<label for="SleptYet"> Tick if you have slept this morning/night</label>
+</div>
+<div id="AS_Time"></div>
+</body>
+</html>
